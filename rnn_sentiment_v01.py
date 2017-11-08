@@ -216,31 +216,36 @@ for word in word_index.keys():
         index_word[word_index.get(word)] = 'UNK'
 
 
-# =============================================================================
-# # create special dictionary for faster replacement of tokens in sentences
-# temp = {}
-# for word in word_index.keys():
-#     if word in wordlist:
-#         temp[word_index.get(word)] = word_index.get(word)
-#     else:
-#         temp[word_index.get(word)] = 'UNK'
-# 
-# # add PAD and EOS to the index_word list
-# temp[0] = 'PAD'
-# temp[23411] = 'EOS'
-# 
-# 
-# # replace tokens in sentences
-# X = X.apply(lambda y: y.map(lambda x: temp.get(x,x)), axis=1)
-# 
-# 
-# # mark the first PAD with EOS to indicate end of sentence
-# def set_eos(row):
-#     row.iloc[list(row).index('PAD') if 'PAD' in list(row) else -1]='EOS'
-#     return row
-# 
-# X = X.apply(lambda y: set_eos(y), axis=1)
-# =============================================================================
+
+
+# create special dictionary for faster replacement of tokens in sentences
+temp = {}
+for word in word_index.keys():
+    if word in wordlist:
+        temp[word_index.get(word)] = word_index.get(word)
+    else:
+        temp[word_index.get(word)] = word_index.get(word) # this is really meaningless but this is a short hack from experimenting
+
+# add PAD and EOS to the index_word list
+#temp[0] = 'PAD'
+#temp[len(word_index)] = 'EOS' 
+temp[0] = word_index['PAD']
+temp[len(word_index)] = word_index['EOS']
+
+
+# replace tokens in sentences
+X = X.apply(lambda y: y.map(lambda x: temp.get(x,x)), axis=1)
+
+
+# mark the first PAD with EOS to indicate end of sentence
+def set_eos(row):
+#    row.iloc[list(row).index('PAD') if 'PAD' in list(row) else -1] = word_index['EOS']
+    row.iloc[list(row).index(0) if 0 in list(row) else -1] = word_index['EOS']
+    return row
+
+X = X.apply(lambda y: set_eos(y), axis=1)
+
+
 
 
 # one hot encode target
@@ -274,10 +279,12 @@ for word in word_index.keys():
         embeddings_index[word] = [0] * 300 # default size of google news vector embeddings
 
 
-empty=np.empty(300, dtype=float); empty.fill(0.001) 
-embeddings_index['PAD'] = empty
-embeddings_index['EOS'] = empty
-embeddings_index['UNK'] = empty
+pad_embed=np.empty(300, dtype=float); pad_embed.fill(0.001) 
+eos_embed=np.empty(300, dtype=float); eos_embed.fill(0.999)
+unk_embed=np.empty(300, dtype=float); unk_embed.fill(0.555) 
+embeddings_index['PAD'] = pad_embed
+embeddings_index['EOS'] = eos_embed
+embeddings_index['UNK'] = unk_embed
 
 
 
