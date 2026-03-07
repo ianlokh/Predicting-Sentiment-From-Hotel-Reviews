@@ -5,31 +5,24 @@ Created on Fri Mar 24 11:12:06 2017
 
 @author: ianlo
 """
-import threading, mkl, math, re
+import threading, math, re
 import numpy as np # linear algebra
 
 import wordnetutils as wnu
 
-from nltk.corpus import stopwords
-from nltk.stem.snowball import SnowballStemmer
-from nltk.tokenize import word_tokenize
-from nltk.tokenize import TreebankWordTokenizer
+from gensim.parsing.preprocessing import STOPWORDS as GENSIM_STOPWORDS
+from gensim.utils import simple_preprocess
 
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 
 import global_settings as gs
 
 
-mkl.set_num_threads(6)
-
 # define stop word list
-stops = set(stopwords.words('english'))
-
-# initialise stemmer
-snowball_stemmer = SnowballStemmer('english', ignore_stopwords=True)
+stops = set(GENSIM_STOPWORDS)
 
 # initiaise tokenizer
-tokenizer = TreebankWordTokenizer().tokenize
+tokenizer = simple_preprocess
 
 
 
@@ -49,7 +42,7 @@ class ThreadSafeDict(dict) :
 
 
 def stem(row, column):
-    stemlist = [snowball_stemmer.stem(word) for word in word_tokenize(row[column])]
+    stemlist = simple_preprocess(row[column])
     return stemlist
 
 
@@ -62,27 +55,16 @@ def lemm_question(row, column):
 
 def remv_stopwords(row, column):
     sent = ''
-    for word in word_tokenize(row[column]):
+    for word in simple_preprocess(row[column]):
         if word not in wnu.stpwrd:
             sent += ' ' + word
     return sent
-#    wordset = {}
-#    for word in word_tokenize(row[column]):
-#        if word not in wnu.stpwrd:
-#            wordset[word] = 1
-#    sent = ' '.join(word for word in wordset.keys())
-#    return sent
 
 
 
 def tokenize_stem(row, column):
-    sent = ''
-    for word in word_tokenize(row[column]):
-        sent += ' ' + snowball_stemmer.stem(word)
+    sent = ' '.join(simple_preprocess(row[column]))
     return sent
-#    tokens = word_tokenize(text)
-#    stems = [snowball_stemmer.stem(word) for word in tokens]
-#    return stems
 
 
 
@@ -232,9 +214,9 @@ def clean(text, remove_stopwords=False, stem_words=False):
 def clean_text(df, dest_col_ind, dest_col, src_col):
     if (src_col == dest_col):
         # apply function in place
-        df[dest_col] = df.apply(lambda x: clean(x[src_col], remove_stopwords=True, stem_words=True), axis=1, raw=True)
+        df[dest_col] = df.apply(lambda x: clean(x[src_col], remove_stopwords=True, stem_words=True), axis=1)
     else:
-        df.insert(dest_col_ind, dest_col, df.apply(lambda x: clean(x[src_col], remove_stopwords=True, stem_words=True), axis=1, raw=True))
+        df.insert(dest_col_ind, dest_col, df.apply(lambda x: clean(x[src_col], remove_stopwords=True, stem_words=True), axis=1))
     return df
 
 
@@ -243,9 +225,9 @@ def clean_text(df, dest_col_ind, dest_col, src_col):
 def lower_case(df, dest_col_ind, dest_col, src_col):
     if (src_col == dest_col):
         # apply function in place
-        df[dest_col] = df.apply(lambda x: x[src_col].lower(), axis=1, raw=True).values
+        df[dest_col] = df[src_col].str.lower()
     else:
-        df.insert(dest_col_ind, dest_col, df.apply(lambda x: x[src_col].lower(), axis=1, raw=True))
+        df.insert(dest_col_ind, dest_col, df[src_col].str.lower())
     return df
 
 
@@ -264,9 +246,9 @@ def restructureText(df, dest_col_ind, dest_col, src_col):
 
     if (src_col == dest_col):
         # apply function in place
-        df[dest_col] = df.apply(lambda x: restructure(x, src_col, gs.splitPairs), axis=1, raw=True).values
+        df[dest_col] = df.apply(lambda x: restructure(x, src_col, gs.splitPairs), axis=1).values
     else:
-        df.insert(dest_col_ind, dest_col, df.apply(lambda x: restructure(x, src_col, gs.splitPairs), axis=1, raw=True))
+        df.insert(dest_col_ind, dest_col, df.apply(lambda x: restructure(x, src_col, gs.splitPairs), axis=1))
     return df
 
 
@@ -275,9 +257,9 @@ def restructureText(df, dest_col_ind, dest_col, src_col):
 def remove_stopwords(df, dest_col_ind, dest_col, src_col):
     if (src_col == dest_col):
         # apply function in place
-        df[dest_col] = df.apply(lambda x: remv_stopwords(x, src_col), axis=1, raw=True).values
+        df[dest_col] = df.apply(lambda x: remv_stopwords(x, src_col), axis=1).values
     else:
-        df.insert(dest_col_ind, dest_col, df.apply(lambda x: remv_stopwords(x, src_col), axis=1, raw=True))
+        df.insert(dest_col_ind, dest_col, df.apply(lambda x: remv_stopwords(x, src_col), axis=1))
     return df
 
 
@@ -291,7 +273,7 @@ def get_words_by_freq(corpus, freq):
     X = ngram_vectorizer.fit_transform(corpus)
     
     # Vocabulary
-    vocab = list(ngram_vectorizer.get_feature_names())
+    vocab = list(ngram_vectorizer.get_feature_names_out())
     
     # Column-wise sum of the X matrix.
     # It's some crazy numpy syntax that looks horribly unpythonic

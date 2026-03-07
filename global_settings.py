@@ -30,3 +30,7 @@ def init():
     # read in excel spreadsheet of pairs of concatenated words to split
     pairs = pd.read_csv('./SplitPairs.csv')
     splitPairs = [tuple(x) for x in pairs.to_records(index=True)]
+
+
+# Auto-initialise on import so multiprocessing worker processes are ready
+init()
