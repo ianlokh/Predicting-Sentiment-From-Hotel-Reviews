@@ -1,3 +1,8 @@
 *.hdf5
 *.zip
 *.db
+.DS_Store
+GoogleNews-vectors-negative300.bin
+__pycache__/
+*.pyc
+data/.DS_Store
