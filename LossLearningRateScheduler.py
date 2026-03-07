@@ -40,9 +40,22 @@ class LossLearningRateScheduler(keras.callbacks.History):
 
     def on_epoch_begin(self, epoch, logs=None):
         
+        def get_lr():
+            lr = self.model.optimizer.learning_rate
+            if hasattr(lr, 'numpy'):
+                return float(lr.numpy())
+            return float(keras.backend.get_value(lr))
+
+        def set_lr(value):
+            lr = self.model.optimizer.learning_rate
+            if hasattr(lr, 'assign'):
+                lr.assign(value)
+            else:
+                keras.backend.set_value(self.model.optimizer.learning_rate, value)
+
         if len(self.epoch) > self.lookback_epochs:
 
-            current_lr = float(self.model.optimizer.learning_rate)
+            current_lr = get_lr()
 
             target_loss = self.history[self.loss_type]
 
@@ -51,7 +64,7 @@ class LossLearningRateScheduler(keras.callbacks.History):
             if loss_diff <= np.abs(target_loss[-1]) * (self.decay_threshold * self.lookback_epochs):
 
                 print(' '.join(('Changing learning rate from', str(current_lr), 'to', str(current_lr * self.decay_multiple))))
-                self.model.optimizer.learning_rate.assign(current_lr * self.decay_multiple)
+                set_lr(current_lr * self.decay_multiple)
                 current_lr = current_lr * self.decay_multiple
 
             else:
@@ -60,15 +73,15 @@ class LossLearningRateScheduler(keras.callbacks.History):
 
             if self.spike_epochs is not None and len(self.epoch) in self.spike_epochs:
                 print(' '.join(('Spiking learning rate from', str(current_lr), 'to', str(current_lr * self.spike_multiple))))
-                self.model.optimizer.learning_rate.assign(current_lr * self.spike_multiple)
+                set_lr(current_lr * self.spike_multiple)
 
         else:
 
             print(' '.join(('Setting learning rate to', str(self.base_lr))))
-            self.model.optimizer.learning_rate.assign(self.base_lr)
+            set_lr(self.base_lr)
 
 
-        return float(self.model.optimizer.learning_rate)
+        return get_lr()
 
 
 

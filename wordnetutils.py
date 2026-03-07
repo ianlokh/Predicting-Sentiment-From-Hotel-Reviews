@@ -18,7 +18,7 @@ allow_stopwords = allow_stopwords['Column1'].astype(str).tolist()
 addtn_stopwords = pd.read_csv('./AdditionalStopwords.csv')
 addtn_stopwords = addtn_stopwords['Column1'].astype(str).tolist()
 
-stpwrd = list(set(GENSIM_STOPWORDS) | set(addtn_stopwords) - set(allow_stopwords))
+stpwrd = list((set(GENSIM_STOPWORDS) | set(addtn_stopwords)) - set(allow_stopwords))
 stpwrd.sort()
 
 #==============================================================================
