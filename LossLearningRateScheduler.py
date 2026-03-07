@@ -9,8 +9,7 @@ Created on Sun Oct 22 14:04:28 2017
 from __future__ import absolute_import
 from __future__ import print_function
 
-import keras
-from keras import backend as K
+from tensorflow import keras
 import numpy as np
 
 
@@ -43,16 +42,16 @@ class LossLearningRateScheduler(keras.callbacks.History):
         
         if len(self.epoch) > self.lookback_epochs:
 
-            current_lr = K.get_value(self.model.optimizer.lr)
+            current_lr = float(self.model.optimizer.learning_rate)
 
-            target_loss = self.history[self.loss_type] 
+            target_loss = self.history[self.loss_type]
 
             loss_diff =  target_loss[-int(self.lookback_epochs)] - target_loss[-1]
 
             if loss_diff <= np.abs(target_loss[-1]) * (self.decay_threshold * self.lookback_epochs):
 
                 print(' '.join(('Changing learning rate from', str(current_lr), 'to', str(current_lr * self.decay_multiple))))
-                K.set_value(self.model.optimizer.lr, current_lr * self.decay_multiple)
+                self.model.optimizer.learning_rate.assign(current_lr * self.decay_multiple)
                 current_lr = current_lr * self.decay_multiple
 
             else:
@@ -61,15 +60,15 @@ class LossLearningRateScheduler(keras.callbacks.History):
 
             if self.spike_epochs is not None and len(self.epoch) in self.spike_epochs:
                 print(' '.join(('Spiking learning rate from', str(current_lr), 'to', str(current_lr * self.spike_multiple))))
-                K.set_value(self.model.optimizer.lr, current_lr * self.spike_multiple)
+                self.model.optimizer.learning_rate.assign(current_lr * self.spike_multiple)
 
         else:
 
             print(' '.join(('Setting learning rate to', str(self.base_lr))))
-            K.set_value(self.model.optimizer.lr, self.base_lr)
+            self.model.optimizer.learning_rate.assign(self.base_lr)
 
 
-        return K.get_value(self.model.optimizer.lr)
+        return float(self.model.optimizer.learning_rate)
 
 
 
