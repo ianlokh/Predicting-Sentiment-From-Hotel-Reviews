@@ -1,8 +1,60 @@
-*.hdf5
-*.zip
-*.db
-.DS_Store
-GoogleNews-vectors-negative300.bin
+# macOS
+**/.DS_Store
+
+# Python
 __pycache__/
 *.pyc
-data/.DS_Store
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Virtual environments
+venv/
+env/
+.env/
+.venv/
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Data & large files
+*.zip
+*.db
+GoogleNews-vectors-negative300.bin
+
+# Models
+*.hdf5
+*.keras
+
+# Images (exclude from repo - not code or data)
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+*.svg
+*.pdf
+
+# Logs
+*.log
+logs/
+
+# Checkpoints & temporary files
+*.ckpt
+*.pt
+*.pth
+*.pkl
+*.tmp
+*.bak
+
+# Test & coverage
+.pytest_cache/
+.coverage
+htmlcov/
