@@ -58,3 +58,27 @@ logs/
 .pytest_cache/
 .coverage
 htmlcov/
+
+# -----------------------------------------------------------------------------
+# Tooling / AI assistants
+#
+# Local state directories created by developer tooling and AI coding
+# assistants. Machine-specific caches; must not be committed.
+# -----------------------------------------------------------------------------
+.serena/
+.claude/
+.cursor/
+
+# -----------------------------------------------------------------------------
+# Extra build / type-check / package caches
+# -----------------------------------------------------------------------------
+.mypy_cache/
+.pytype/
+.jupyter/
+*.egg-info/
+build/
+dist/
+
+# Conda environment
+conda_env.yml
+conda-env.yml
